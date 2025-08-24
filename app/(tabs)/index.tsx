@@ -1,8 +1,5 @@
 import { type Message, useRAG } from 'react-native-rag';
 import {
-  QWEN3_0_6B_QUANTIZED,
-  QWEN3_TOKENIZER,
-  QWEN3_TOKENIZER_CONFIG,
   ALL_MINILM_L6_V2,
   ALL_MINILM_L6_V2_TOKENIZER,
   LLAMA3_2_1B_QLORA,
@@ -13,12 +10,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
 import { ExecuTorchEmbeddings, ExecuTorchLLM } from '@react-native-rag/executorch';
 import { KeyboardAvoidingView, Text, View, StyleSheet, Platform, Alert } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MessagesList } from '~/components/MessagesList';
 import { ChatInput } from '~/components/ChatInput';
 import { DocumentModal } from '~/components/DocumentModal';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useBudgetStore } from '~/store/useLocalBudgetStore';
 
 export default function App() {
@@ -29,6 +24,7 @@ export default function App() {
   const [augmentedGeneration, setAugmentedGeneration] = useState(true);
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const insets = useSafeAreaInsets();
 
   const vectorStore = useMemo(() => {
     return new OPSQLiteVectorStore({
@@ -158,9 +154,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={appStyles.safeArea}>
-        <KeyboardAvoidingView
-          style={appStyles.keyboardAvoidingView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={appStyles.chatContainer}>
           {messages.length > 0 ? (
             <MessagesList
               messages={messages}
@@ -179,6 +173,10 @@ export default function App() {
               <Text style={appStyles.emptyStateSubtitle}>What can I help you with?</Text>
             </View>
           )}
+        </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={insets.bottom + 12}>
           <ChatInput
             message={message}
             onMessageChange={setMessage}
@@ -212,7 +210,7 @@ const appStyles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 8,
   },
-  keyboardAvoidingView: {
+  chatContainer: {
     flex: 1,
   },
   loadingContainer: {
